@@ -1,0 +1,10 @@
+Flask>=3.0
+pandas>=2.0
+openpyxl>=3.1
+reportlab>=4.0
+gunicorn>=21.2
+
+# Optional - for production parity with the thesis's original design.
+# Uncomment and set config.USE_MONGO = True / GEMINI_API_KEY to enable.
+# pymongo>=4.6
+# google-generativeai>=0.5

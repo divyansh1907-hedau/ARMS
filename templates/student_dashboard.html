@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block title %}Student Portal - ARMS{% endblock %}
+
+{% macro grade_badge(grade, pct) -%}
+  <span class="badge badge-sm font-semibold {% if pct is not none and pct < 40 %}badge-soft-error{% elif pct is not none and pct < 60 %}badge-soft-warning{% else %}badge-soft-success{% endif %}">{{ grade }}</span>
+{%- endmacro %}
+{% macro trend_icon(name) -%}
+  {%- if name == 'improving' -%}
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-success"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+  {%- elif name == 'declining' -%}
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-error"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+  {%- else -%}
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="h-4 w-4 opacity-50"><line x1="2" y1="12" x2="22" y2="12"/></svg>
+  {%- endif -%}
+{%- endmacro %}
+{% set risk_tone = 'badge-soft-error' if risk.risk_level == 'High' else ('badge-soft-warning' if risk.risk_level == 'Medium' else 'badge-soft-success') %}
+
+{% block content %}
+<div class="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+
+  <!-- ============ HERO ============ -->
+  <div class="glass-panel rounded-2xl p-6 shadow-sm">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-xl font-extrabold text-white shadow-md shadow-indigo-500/30">
+          {{ (student.get('name') or session.get('name') or '?')|first|upper }}
+        </span>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Welcome back, {{ student.get('name', session.get('name')) }}</h1>
+          <p class="mt-0.5 text-sm opacity-60">College ID: <span class="font-mono">{{ student.get('college_id') }}</span></p>
+        </div>
+      </div>
+      <span class="badge {{ risk_tone }} gap-1.5 px-3 py-3 font-semibold">{{ risk.risk_level }} risk · {{ risk.risk_score }}</span>
+    </div>
+
+    <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div class="rounded-xl bg-base-200/60 px-4 py-3 transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-base-200 hover:shadow-lg">
+        <div class="text-xs font-medium opacity-60">CGPA</div>
+        <div class="mt-1 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent">{{ cgpa }}</div>
+        <div class="text-[11px] opacity-50">on a 10-point scale</div>
+      </div>
+      <div class="rounded-xl bg-base-200/60 px-4 py-3 transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-base-200 hover:shadow-lg">
+        <div class="text-xs font-medium opacity-60">Average score</div>
+        <div class="mt-1 text-2xl font-semibold">{{ risk.average_percentage }}%</div>
+        <div class="flex items-center gap-1.5 text-[11px] opacity-60">{{ trend_icon(risk.trend) }} {{ risk.trend }}</div>
+      </div>
+      <div class="rounded-xl bg-base-200/60 px-4 py-3 transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-base-200 hover:shadow-lg">
+        <div class="text-xs font-medium opacity-60">Avg. attendance</div>
+        <div class="mt-1 text-2xl font-semibold {% if risk.average_attendance is not none and risk.average_attendance < 75 %}text-error{% endif %}">{{ risk.average_attendance }}%</div>
+        <div class="flex items-center gap-1.5 text-[11px] opacity-60">{{ trend_icon(risk.attendance_trend) }} {{ risk.attendance_trend }}</div>
+      </div>
+      <div class="rounded-xl bg-base-200/60 px-4 py-3 transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-base-200 hover:shadow-lg">
+        <div class="text-xs font-medium opacity-60">Semesters recorded</div>
+        <div class="mt-1 text-2xl font-semibold">{{ transcript.total_semesters }}</div>
+        <div class="text-[11px] opacity-50">across your history</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RECORD + SIDE PANEL ============ -->
+  <div class="mt-6 grid gap-6 xl:grid-cols-[1fr_320px]">
+
+    <!-- Transcript -->
+    <div class="glass-panel min-w-0 rounded-2xl p-6 shadow-sm">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold tracking-tight">Full Academic Record</h2>
+          <p class="mt-0.5 text-sm opacity-60">Consolidated across {{ transcript.total_semesters }} semester(s)</p>
+        </div>
+        <a class="btn btn-outline btn-sm" href="{{ url_for('pdf.transcript_pdf_student') }}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Transcript PDF
+        </a>
+      </div>
+
+      {% if transcript.semesters %}
+      <div class="mt-4"><canvas id="cgpa-trend-chart" height="110"></canvas></div>
+
+      <div class="mt-4 overflow-x-auto rounded-xl border border-base-300">
+        <table class="table table-sm table-zebra">
+          <thead><tr><th>Semester</th><th>Exam</th><th>%</th><th>Grade</th><th>GPA</th><th>Attendance</th></tr></thead>
+          <tbody>
+            {% for sem in transcript.semesters %}
+              {% for exam in sem.exams %}
+              <tr>
+                <td>{{ sem.session_name }}</td>
+                <td>{{ exam.exam_name }}</td>
+                <td>{{ exam.percentage }}%</td>
+                <td>{{ grade_badge(exam.grade, exam.percentage) }}</td>
+                <td>{{ exam.gpa }}</td>
+                <td class="{% if exam.attendance is not none and exam.attendance < 75 %}font-semibold text-error{% endif %}">
+                  {{ exam.attendance if exam.attendance is not none else '-' }}{{ '%' if exam.attendance is not none else '' }}
+                </td>
+              </tr>
+              {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="flex h-40 flex-col items-center justify-center rounded-xl border border-dashed border-base-300 mt-4 text-center opacity-60">
+        <p class="text-sm">No semesters recorded yet.</p>
+        <p class="mt-1 text-xs">Results appear here once your teacher publishes them.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Side panel -->
+    <div class="flex flex-col gap-5">
+      <div class="glass-panel rounded-2xl p-5 shadow-sm">
+        <h3 class="font-semibold">Risk snapshot</h3>
+        {% if risk.is_at_risk %}
+          <p class="mt-1 text-xs opacity-60">Factors currently affecting your risk score:</p>
+          <ul class="mt-3 space-y-2">
+            {% for d in risk.risk_drivers %}
+            <li class="flex items-start gap-2 rounded-lg bg-base-200/60 px-3 py-2 text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 h-4 w-4 shrink-0 text-warning"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {{ d }}
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="mt-2 flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2 text-sm text-success">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            You're on track — no risk factors flagged.
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10 p-5 shadow-sm">
+        <h3 class="flex items-center gap-2 font-semibold">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-primary"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+          Edu-AI Study Buddy
+        </h3>
+        <p class="mt-1 text-xs leading-relaxed opacity-70">Ask about your grades, weak subjects, or how to improve — the assistant knows your published results.</p>
+        <button class="btn btn-sm mt-3 border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="toggleAiWidget()">Open chat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESULT HISTORY ============ -->
+  <section>
+    <h2 class="mb-3 mt-8 text-lg font-bold tracking-tight">Result history</h2>
+    {% for sess, exams in results.items() %}
+      <h3 class="mb-3 mt-4 text-sm font-semibold uppercase tracking-wider opacity-50">{{ sess }}</h3>
+      <div class="grid gap-4 md:grid-cols-2">
+        {% for exam_name, row in exams.items() %}
+        <div class="glass-card rounded-2xl p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-2">
+            <h4 class="font-semibold">{{ exam_name }}</h4>
+            {{ grade_badge(row.grade, row.percentage) }}
+          </div>
+
+          <div class="mt-3 overflow-x-auto rounded-lg border border-base-300">
+            <table class="table table-sm">
+              <thead><tr><th>Subject</th><th>Marks</th><th>Grade</th></tr></thead>
+              <tbody>
+                {% for subj_name, subj in row.subjects.items() %}
+                <tr>
+                  <td>{{ subj_name }}</td>
+                  <td>{{ subj.score }}/{{ subj.max_marks }}</td>
+                  <td>{{ grade_badge(subj.grade, subj.percentage) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div class="rounded-lg bg-base-200/60 px-3 py-2">
+              <div class="text-[11px] opacity-60">Total</div>
+              <div class="text-base font-semibold">{{ row.total_obtained }}</div>
+            </div>
+            <div class="rounded-lg bg-base-200/60 px-3 py-2">
+              <div class="text-[11px] opacity-60">Percentage</div>
+              <div class="text-base font-semibold">{{ row.percentage }}%</div>
+            </div>
+            <div class="rounded-lg bg-base-200/60 px-3 py-2">
+              <div class="text-[11px] opacity-60">Class rank</div>
+              <div class="text-base font-semibold">#{{ row.rank }}</div>
+            </div>
+            {% if row.attendance is not none %}
+            <div class="rounded-lg bg-base-200/60 px-3 py-2">
+              <div class="text-[11px] opacity-60">Attendance</div>
+              <div class="text-base font-semibold {% if row.attendance < 75 %}text-error{% endif %}">{{ row.attendance }}%</div>
+            </div>
+            {% else %}
+            <div class="rounded-lg bg-base-200/60 px-3 py-2">
+              <div class="text-[11px] opacity-60">GPA</div>
+              <div class="text-base font-semibold">{{ row.gpa }}</div>
+            </div>
+            {% endif %}
+          </div>
+
+          <a class="btn btn-outline btn-sm mt-4" href="{{ url_for('pdf.export_my_report', session_name=sess, exam_name=exam_name) }}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Report Card
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="flex h-32 flex-col items-center justify-center rounded-2xl border border-dashed border-base-300 text-center opacity-60">
+        <p class="text-sm">No results published yet.</p>
+      </div>
+    {% endfor %}
+  </section>
+</div>
+
+<!-- ============ Performance Alert Modal ============ -->
+{% if risk.is_at_risk %}
+<div class="modal-overlay open" id="perf-alert-modal">
+  <div class="modal-box w-full max-w-md rounded-2xl border border-base-300 bg-base-100 p-6 text-center shadow-2xl">
+    <span class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-error/10 text-error">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </span>
+    <h3 class="text-lg font-bold tracking-tight">Performance Alert</h3>
+    <p class="mt-2 text-sm leading-relaxed opacity-70">Based on your recent performance, you might be at risk in upcoming exams.
+      We encourage you to seek help from your teachers or use the AI study buddy.</p>
+    {% if risk.risk_drivers %}
+    <div class="mt-3 flex flex-wrap justify-center gap-1.5">
+      {% for d in risk.risk_drivers %}<span class="badge badge-warning badge-outline badge-sm">{{ d }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    <button class="btn mt-5 border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="document.getElementById('perf-alert-modal').classList.remove('open')">Got it</button>
+  </div>
+</div>
+{% endif %}
+
+<!-- ============ Edu-AI Study Buddy widget ============ -->
+<button class="btn btn-circle fixed bottom-5 right-5 z-50 border-none bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/40 transition-transform duration-300 hover:scale-105 hover:from-blue-700 hover:to-indigo-700" onclick="toggleAiWidget()" aria-label="Open AI study buddy">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</button>
+
+<div class="ai-widget glass-panel rounded-2xl shadow-2xl" id="ai-widget">
+  <div class="flex items-center justify-between border-b border-base-300 px-4 py-3">
+    <span class="flex items-center gap-2 text-sm font-semibold">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-warning"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+      Edu-AI Study Buddy
+    </span>
+    <button class="btn btn-circle btn-ghost btn-xs" onclick="toggleAiWidget()" aria-label="Close">✕</button>
+  </div>
+  <div class="chat-log flex-1 overflow-y-auto p-4" id="chat-log">
+    <div class="bot">Hi! Ask me about your results or how to improve your weak subjects.</div>
+  </div>
+  <div class="flex gap-2 border-t border-base-300 p-3">
+    <input id="chat-input" placeholder="Ask about your results..." class="input input-bordered input-sm flex-1">
+    <button class="btn btn-sm border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700" onclick="sendStudentChat()">Send</button>
+  </div>
+</div>
+
+<script>
+function toggleAiWidget() { document.getElementById('ai-widget').classList.toggle('open'); }
+function appendChat(who, text) {
+  const log = document.getElementById('chat-log');
+  const div = document.createElement('div');
+  div.className = who === 'You' ? 'me' : 'bot';
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+async function sendStudentChat() {
+  const input = document.getElementById('chat-input');
+  const question = input.value.trim();
+  if (!question) return;
+  appendChat('You', question);
+  input.value = '';
+  const res = await fetch('/api/chatbot/student', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question }),
+  });
+  const data = await res.json();
+  appendChat('Edu-AI', data.reply || data.error || 'No response.');
+}
+document.getElementById('chat-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') sendStudentChat(); });
+
+// GPA trend chart (single series -> no legend; themed via charts-theme.js)
+(function () {
+  if (!window.Chart || !{{ 'true' if transcript.semesters else 'false' }}) return;
+  applyChartTheme();
+  const v = armsViz();
+  new Chart(document.getElementById('cgpa-trend-chart'), {
+    type: 'line',
+    data: {
+      labels: {{ transcript.semesters | map(attribute='session_name') | list | tojson }},
+      datasets: [{
+        label: 'GPA per Semester',
+        data: {{ transcript.semesters | map(attribute='gpa') | list | tojson }},
+        borderColor: v.series1,
+        backgroundColor: hexAlpha(v.series1, .10),
+        fill: true,
+        tension: 0.3,
+        borderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 5,
+        pointBackgroundColor: v.series1,
+        pointBorderColor: v.surface,
+        pointBorderWidth: 2,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 10, grid: { color: v.grid }, border: { display: false } },
+        x: { grid: { display: false }, border: { color: v.grid } },
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}

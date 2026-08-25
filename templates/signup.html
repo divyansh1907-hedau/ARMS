@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Teacher Sign Up - ARMS{% endblock %}
+{% block content %}
+<div class="flex min-h-[82vh] items-center justify-center bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 px-4 py-10">
+  <div class="w-full max-w-lg">
+    <div class="mb-6 text-center">
+      <span class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/30">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6">
+          <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+        </svg>
+      </span>
+      <h1 class="text-xl font-extrabold tracking-tight sm:text-2xl">Create your teacher account</h1>
+      <p class="mt-1 text-sm opacity-60">Academic Record and Management System</p>
+    </div>
+
+    <div class="glass-panel rounded-2xl p-6 shadow-xl sm:p-8">
+      <form method="POST" action="{{ url_for('auth.signup') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium">Full Name</label>
+          <input type="text" name="name" placeholder="Dr. Jane Doe" value="{{ form.name if form else '' }}" required class="input input-bordered w-full">
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Teacher ID</label>
+          <input type="text" name="teacher_id" placeholder="T002" value="{{ form.teacher_id if form else '' }}" required class="input input-bordered w-full">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Email</label>
+          <input type="email" name="email" placeholder="jane.doe@college.edu" value="{{ form.email if form else '' }}" required class="input input-bordered w-full">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Subjects <span class="font-normal opacity-60">(comma-separated)</span></label>
+          <input type="text" name="subjects" placeholder="Mathematics, Computer Science" value="{{ form.subjects if form else '' }}" class="input input-bordered w-full">
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Password</label>
+          <input type="password" name="password" placeholder="At least 6 characters" required class="input input-bordered w-full">
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Confirm Password</label>
+          <input type="password" name="confirm_password" placeholder="Re-enter password" required class="input input-bordered w-full">
+        </div>
+        <button type="submit" class="btn mt-2 border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30 sm:col-span-2">Create Account</button>
+      </form>
+      <p class="mt-4 text-center text-xs opacity-70">
+        Already have an account? <a href="{{ url_for('auth.login') }}" class="link link-primary font-medium">Log in</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

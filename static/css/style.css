@@ -1,0 +1,200 @@
+/* ============================================================
+   ARMS — structural + premium surface layer.
+   Tailwind/DaisyUI utilities handle layout; this file defines
+   (a) behavior shims for JS-driven state hooks and
+   (b) theme-aware premium components (glass surfaces, sidebar
+       pills, soft badges) built on DaisyUI's OKLCH variables,
+       so everything adapts to the corporate/business themes.
+   ============================================================ */
+
+html {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Theme-conditional icons in the topbar */
+html[data-theme='business'] .icon-moon { display: none; }
+html:not([data-theme='business']) .icon-sun { display: none; }
+
+/* ---- View switcher (dashboard.js showView) ---- */
+.view { display: none; }
+.view.active {
+  display: block;
+  animation: view-in .18s ease-out;
+}
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---- Modal overlays (classList.add/remove('open')) ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / .45);
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open {
+  display: flex;
+}
+.modal-overlay .modal-box {
+  animation: view-in .18s ease-out;
+}
+
+/* ---- Premium glass surfaces ----
+   .glass-panel : static glass (large layout cards)
+   .glass-card  : glass + lift/border-glow on hover (tiles, action cards) */
+.glass-panel,
+.glass-card {
+  background: oklch(var(--b1) / .78);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid oklch(var(--bc) / .08);
+}
+.glass-card {
+  transition: transform .3s ease-out, box-shadow .3s ease-out, border-color .3s ease-out;
+}
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: oklch(var(--p) / .40);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / .12), 0 10px 10px -6px rgb(0 0 0 / .08);
+}
+
+/* ---- Sidebar navigation pills ---- */
+.nav-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  width: auto;               /* horizontal scroller on mobile */
+  border-radius: .8rem;
+  padding: .55rem .8rem;
+  font-size: .85rem;
+  font-weight: 500;
+  text-align: left;
+  color: oklch(var(--bc) / .65);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color .2s ease, color .2s ease;
+}
+@media (min-width: 1024px) {
+  .nav-pill { width: 100%; }
+}
+.nav-pill:hover {
+  background: oklch(var(--b2) / .9);
+  color: oklch(var(--bc));
+}
+.nav-ico {
+  transition: transform .25s ease, filter .25s ease, color .25s ease;
+}
+.nav-pill:hover .nav-ico {
+  color: oklch(var(--p));
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 6px oklch(var(--p) / .55));
+}
+.nav-pill.active {
+  background: oklch(var(--p) / .13);
+  color: oklch(var(--p));
+  font-weight: 600;
+}
+.nav-pill.active::after {
+  content: "";
+  position: absolute;
+  right: .6rem;
+  top: 50%;
+  translate: 0 -50%;
+  width: .4rem;
+  height: .4rem;
+  border-radius: 9999px;
+  background: oklch(var(--p));
+  box-shadow: 0 0 8px oklch(var(--p) / .7);
+}
+
+/* ---- Soft-tint badges ---- */
+.badge.badge-soft-error {
+  background: oklch(var(--er) / .14);
+  color: oklch(var(--er));
+  border-color: transparent;
+}
+.badge.badge-soft-warning {
+  background: oklch(var(--wa) / .16);
+  color: oklch(var(--wa));
+  border-color: transparent;
+}
+.badge.badge-soft-success {
+  background: oklch(var(--su) / .16);
+  color: oklch(var(--su));
+  border-color: transparent;
+}
+.badge.badge-soft-info {
+  background: oklch(var(--in) / .14);
+  color: oklch(var(--in));
+  border-color: transparent;
+}
+
+/* ---- Floating AI assistant widget ---- */
+.ai-widget {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 5.75rem;
+  z-index: 50;
+  width: min(22rem, calc(100vw - 2.5rem));
+  height: 26rem;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.ai-widget.open {
+  display: flex;
+  animation: view-in .18s ease-out;
+}
+
+/* Chat bubbles (appendChat creates .me / .bot) */
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.chat-log .me,
+.chat-log .bot {
+  max-width: 85%;
+  padding: .5rem .75rem;
+  border-radius: 1rem;
+  font-size: .8125rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.chat-log .me {
+  align-self: flex-end;
+  background: linear-gradient(to right, #2563eb, #4f46e5);
+  color: #fff;
+  border-bottom-right-radius: .25rem;
+}
+.chat-log .bot {
+  align-self: flex-start;
+  background: oklch(var(--b2));
+  color: oklch(var(--bc));
+  border-bottom-left-radius: .25rem;
+}
+
+/* ---- Chart-type selector tiles (.chart-type-btn / .active) ---- */
+.chart-type-btn {
+  cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease, background-color .2s ease, color .2s ease;
+}
+.chart-type-btn:hover {
+  transform: translateY(-2px);
+  border-color: oklch(var(--p) / .45);
+}
+.chart-type-btn.active {
+  border-color: oklch(var(--p)) !important;
+  background: oklch(var(--p) / .10);
+  color: oklch(var(--p));
+}

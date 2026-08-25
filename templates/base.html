@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ 'business' if request.cookies.get('sram_dark') == '1' else 'corporate' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ARMS{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS + DaisyUI (CDN — matches this project's zero-build setup) -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js — required by the report generator, transcript and student portal charts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+  <!-- Structural shims for JS-driven UI state (views, modals, chat widget) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- Shared light/dark chart palette + Chart.js defaults -->
+  <script src="{{ url_for('static', filename='js/charts-theme.js') }}"></script>
+
+  <script>
+    // Apply the persisted theme before first paint.
+    (function () {
+      try {
+        var dark = localStorage.getItem('sram_dark') === '1';
+        document.documentElement.setAttribute('data-theme', dark ? 'business' : 'corporate');
+      } catch (e) { /* storage unavailable — server-side cookie default stands */ }
+    })();
+
+    function toggleDarkMode() {
+      var dark = document.documentElement.getAttribute('data-theme') !== 'business';
+      document.documentElement.setAttribute('data-theme', dark ? 'business' : 'corporate');
+      try {
+        localStorage.setItem('sram_dark', dark ? '1' : '0');
+        document.cookie = 'sram_dark=' + (dark ? '1' : '0') + ';path=/;max-age=31536000';
+      } catch (e) { /* ignore */ }
+    }
+  </script>
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-base-200/50 text-base-content antialiased">
+
+<!-- Ambient gradient field: gives the glassmorphism surfaces something to blur -->
+<div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+  <div class="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-primary/10 blur-3xl"></div>
+  <div class="absolute -right-32 top-1/3 h-[28rem] w-[28rem] rounded-full bg-secondary/10 blur-3xl"></div>
+  <div class="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-accent/10 blur-3xl"></div>
+</div>
+
+<header class="sticky top-0 z-40 border-b border-base-300/60 bg-base-100/70 backdrop-blur-xl">
+  <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+    <a href="{{ url_for('auth.index') }}" class="flex items-center gap-2.5">
+      <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-content shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+          <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+        </svg>
+      </span>
+      <span class="leading-tight">
+        <span class="block text-sm font-extrabold tracking-tight">ARMS</span>
+        <span class="block text-[11px] opacity-60">Academic Record &amp; Management</span>
+      </span>
+    </a>
+
+    {% if session.get('role') %}
+    <div class="flex items-center gap-2 sm:gap-3">
+      <span class="badge badge-outline hidden gap-1.5 font-medium sm:inline-flex">{{ session.get('name') }} · {{ session.get('role') }}</span>
+      <button class="btn btn-circle btn-ghost btn-sm" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="icon-moon h-4 w-4">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="icon-sun h-4 w-4">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm">Logout</a>
+    </div>
+    {% endif %}
+  </nav>
+</header>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <div class="mx-auto mt-4 max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col gap-2">
+      {% for m in messages %}
+      <div role="alert" class="alert py-2.5 text-sm shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span>{{ m }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+{% endwith %}
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="pb-8 pt-2 text-center text-xs opacity-50">
+  ARMS — Academic Record and Management System
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,7 @@
+ARMS is a web app for teachers to create result "Projects" (a semester/exam
+cycle), enter marks in a spreadsheet-like editor, get automatic totals,
+weighted percentages, grades, GPA/CGPA, and class ranks. Teachers can import
+marks from Excel/CSV, publish finalized results, export PDF report cards,
+and chat with Edu-AI for class insights and at-risk student alerts. Students
+log in to a separate portal to view their own result history, CGPA, and
+chat with Edu-AI for study support.

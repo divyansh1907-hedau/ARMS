@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.log
+
+# Local runtime data — don't commit real student data
+data/teachers.json
+data/students.json
+data/projects/*.json
+data/sheet_cache.txt
+logs/*.log
+
+.env

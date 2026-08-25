@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Login - ARMS{% endblock %}
+{% block content %}
+<div class="flex min-h-[82vh] items-center justify-center bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 px-4 py-10">
+  <div class="w-full max-w-md">
+    <div class="mb-6 text-center">
+      <span class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/30">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6">
+          <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+        </svg>
+      </span>
+      <h1 class="text-xl font-extrabold tracking-tight sm:text-2xl">Academic Record and Management System</h1>
+      <p class="mt-1 text-sm opacity-60">Sign in to your workspace</p>
+    </div>
+
+    <div class="glass-panel rounded-2xl p-6 shadow-xl sm:p-8">
+      <div class="join mb-6 w-full">
+        <button id="tab-teacher" class="btn btn-primary join-item flex-1" onclick="showTab('teacher')">Teacher</button>
+        <button id="tab-student" class="btn btn-ghost join-item flex-1" onclick="showTab('student')">Student</button>
+      </div>
+
+      <form id="teacher-form" method="POST" action="{{ url_for('auth.login') }}" class="space-y-4">
+        <input type="hidden" name="role" value="teacher">
+        <div>
+          <label class="mb-1 block text-sm font-medium">Teacher ID</label>
+          <input type="text" name="teacher_id" placeholder="T001" required class="input input-bordered w-full">
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Password</label>
+          <input type="password" name="password" placeholder="••••••••" required class="input input-bordered w-full">
+        </div>
+        <button type="submit" class="btn w-full border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30">Sign in as Teacher</button>
+        <div class="rounded-lg bg-base-200 px-3 py-2 text-xs opacity-70">
+          Demo account: <span class="font-mono font-semibold">T001 / teacher123</span>
+        </div>
+        <p class="text-center text-xs opacity-70">
+          New teacher? <a href="{{ url_for('auth.signup') }}" class="link link-primary font-medium">Create an account</a>
+        </p>
+      </form>
+
+      <form id="student-form" method="POST" action="{{ url_for('auth.login') }}" class="hidden space-y-4">
+        <input type="hidden" name="role" value="student">
+        <div>
+          <label class="mb-1 block text-sm font-medium">Roll Number (College ID)</label>
+          <input type="text" name="college_id" placeholder="S1001" required class="input input-bordered w-full">
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Mother's Name</label>
+          <input type="text" name="mother_name" placeholder="Sunita Rao" required class="input input-bordered w-full">
+        </div>
+        <button type="submit" class="btn w-full border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30">Sign in as Student</button>
+        <div class="rounded-lg bg-base-200 px-3 py-2 text-xs opacity-70">
+          Demo account: <span class="font-mono font-semibold">S1001 / Sunita Rao</span>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(role) {
+  var isTeacher = role === 'teacher';
+  document.getElementById('teacher-form').classList.toggle('hidden', !isTeacher);
+  document.getElementById('student-form').classList.toggle('hidden', isTeacher);
+  var bt = document.getElementById('tab-teacher');
+  var bs = document.getElementById('tab-student');
+  bt.classList.toggle('btn-primary', isTeacher);
+  bt.classList.toggle('btn-ghost', !isTeacher);
+  bs.classList.toggle('btn-primary', !isTeacher);
+  bs.classList.toggle('btn-ghost', isTeacher);
+}
+</script>
+{% endblock %}

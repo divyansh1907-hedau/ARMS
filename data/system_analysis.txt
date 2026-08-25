@@ -1,0 +1,5 @@
+Architecture: Flask backend (blueprints: auth, project_handler, result_handler,
+pdf_exporter, chatbot_handler, student_predictor, import_export), JSON-file
+data store (swappable for MongoDB), server-rendered Jinja2 templates +
+vanilla JS spreadsheet UI. Grading logic lives in calc_engine.py; data
+integrity checks live in validators.py. PDFs generated with ReportLab.

@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - ARMS{% endblock %}
+{% block content %}
+<div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:px-8">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="shrink-0 lg:sticky lg:top-24 lg:w-60 lg:self-start">
+    <div class="glass-panel rounded-2xl p-3 shadow-sm">
+      <div class="hidden px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-wider opacity-50 lg:block">Workspace</div>
+      <nav class="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+        <button class="nav-pill active" data-nav="home" onclick="showView('home')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-ico h-4 w-4"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Dashboard
+        </button>
+        <button class="nav-pill" data-nav="sheet" onclick="showView('sheet')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-ico h-4 w-4"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+          Sheet Editor
+        </button>
+        <button class="nav-pill" data-nav="report" onclick="showView('report')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="nav-ico h-4 w-4"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Report Generator
+        </button>
+      </nav>
+
+      <div class="hidden px-3 pb-2 pt-4 text-[11px] font-semibold uppercase tracking-wider opacity-50 lg:block">Quick Actions</div>
+      <nav class="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+        <button class="nav-pill" onclick="openBlankSheetModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="nav-ico h-4 w-4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Blank Sheet
+        </button>
+        <button class="nav-pill" onclick="openDetectStudents()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-ico h-4 w-4"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Detect Students
+        </button>
+        <button class="nav-pill" onclick="openTranscriptSearch()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-ico h-4 w-4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Academic Records
+        </button>
+      </nav>
+    </div>
+
+    <div class="glass-panel mt-4 hidden rounded-2xl bg-gradient-to-br from-blue-600/10 to-indigo-600/10 p-4 lg:block">
+      <p class="text-xs leading-relaxed opacity-80">
+        <span class="font-semibold">Tip:</span> hit <span class="font-semibold">Save Project</span> and totals,
+        grades, GPA, ranks and at-risk flags recompute instantly — before you publish anything.
+      </p>
+    </div>
+  </aside>
+
+  <!-- ============ CONTENT ============ -->
+  <div class="min-w-0 flex-1">
+
+    <!-- ============ HOME VIEW ============ -->
+    <div class="view active" id="view-home">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p class="mt-0.5 text-sm opacity-60">Create result projects, enter marks, analyze and publish.</p>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="glass-card rounded-2xl p-5 shadow-sm">
+          <span class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/30 transition-transform duration-300 hover:scale-105">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="h-5 w-5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </span>
+          <h3 class="font-semibold">Create Blank Sheet</h3>
+          <p class="mt-1 text-sm opacity-60">Start with an empty spreadsheet and pick your columns.</p>
+          <button class="btn btn-sm mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-none shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="openBlankSheetModal()">Create</button>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 shadow-sm">
+          <span class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-md shadow-cyan-500/30 transition-transform duration-300 hover:scale-105">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </span>
+          <h3 class="font-semibold">Upload File</h3>
+          <p class="mt-1 text-sm opacity-60">Import Excel or CSV with automatic column parsing.</p>
+          <label class="btn btn-sm mt-4 cursor-pointer bg-gradient-to-r from-sky-500 to-cyan-500 text-white border-none shadow-md shadow-cyan-500/20 hover:from-sky-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-cyan-500/30">
+            Upload
+            <input type="file" id="home-import-file" accept=".csv,.xlsx,.xls" class="hidden" onchange="importFromHome()">
+          </label>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 shadow-sm sm:col-span-2 xl:col-span-1">
+          <span class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-md shadow-fuchsia-500/30 transition-transform duration-300 hover:scale-105">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </span>
+          <h3 class="font-semibold">View Academic Records</h3>
+          <p class="mt-1 text-sm opacity-60">Full Semester 1–8 transcript for any student.</p>
+          <button class="btn btn-outline btn-sm mt-4" onclick="openTranscriptSearch()">Search Records</button>
+        </div>
+      </div>
+
+      <!-- Templates -->
+      <h2 class="mb-3 mt-8 text-lg font-bold tracking-tight">Templates</h2>
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="glass-card rounded-2xl p-5 shadow-sm">
+          <span class="badge badge-soft-info badge-sm font-medium">Basic</span>
+          <h3 class="mt-2 font-semibold">Basic School Grades</h3>
+          <p class="mt-1 text-sm opacity-60">Simple grade tracking for K-12 students.</p>
+          <button class="btn btn-outline btn-sm mt-4" onclick="useTemplate('basic')">Use Template</button>
+        </div>
+        <div class="glass-card rounded-2xl p-5 shadow-sm">
+          <span class="badge badge-soft-success badge-sm font-medium">College</span>
+          <h3 class="mt-2 font-semibold">College Transcript</h3>
+          <p class="mt-1 text-sm opacity-60">University course tracking with GPA.</p>
+          <button class="btn btn-outline btn-sm mt-4" onclick="useTemplate('college')">Use Template</button>
+        </div>
+        <div class="glass-card rounded-2xl p-5 shadow-sm">
+          <span class="badge badge-soft-error badge-sm font-medium">Quick</span>
+          <h3 class="mt-2 font-semibold">Unit Test Results</h3>
+          <p class="mt-1 text-sm opacity-60">Quick assessment tracking.</p>
+          <button class="btn btn-outline btn-sm mt-4" onclick="useTemplate('unit_test')">Use Template</button>
+        </div>
+      </div>
+
+      <!-- Projects -->
+      <h2 class="mb-3 mt-8 text-lg font-bold tracking-tight">Projects</h2>
+      <div class="glass-panel overflow-x-auto rounded-2xl shadow-sm">
+        <table class="table">
+          <thead>
+            <tr><th>Project</th><th>Session</th><th>Students</th><th class="text-right">Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for p in projects %}
+            <tr class="hover">
+              <td>
+                <button class="link link-primary font-medium no-underline hover:underline" onclick="openProject('{{ p.project_id }}')">{{ p.title }}</button>
+              </td>
+              <td class="opacity-70">{{ p.session }}</td>
+              <td><span class="badge badge-ghost">{{ p.student_count }}</span></td>
+              <td class="text-right">
+                <div class="flex justify-end gap-1">
+                  <button class="btn btn-ghost btn-xs" onclick="openProject('{{ p.project_id }}')">Open</button>
+                  <button class="btn btn-ghost btn-xs text-error hover:bg-error/10" title="Delete this project" onclick="deleteProject('{{ p.project_id }}')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    Clear
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="py-12 text-center text-sm opacity-60">No projects yet — create a blank sheet or use a template above.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ SHEET EDITOR VIEW ============ -->
+    <div class="view" id="view-sheet">
+      <div class="mb-4 flex items-center gap-2 text-sm">
+        <button class="link-hover link opacity-70" onclick="showView('home')">Dashboard</button>
+        <span class="opacity-40">/</span>
+        <span class="font-medium">Student Data Sheet</span>
+      </div>
+
+      <div class="grid gap-5 xl:grid-cols-[1fr_320px]">
+        <!-- Editor -->
+        <div class="glass-panel min-w-0 rounded-2xl p-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <input id="subject-name" placeholder="Subject name" class="input input-bordered input-sm w-36">
+              <input id="subject-max" placeholder="Max marks" type="number" value="100" class="input input-bordered input-sm w-24">
+              <button class="btn btn-outline btn-sm" onclick="addSubject()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="h-3.5 w-3.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Subject
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="addStudentRow()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="h-3.5 w-3.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Student Row
+              </button>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button class="btn btn-ghost btn-sm" onclick="saveSheet()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Project
+              </button>
+              <button class="btn btn-sm border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="goToReportGenerator()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="h-4 w-4"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Generate Reports
+              </button>
+            </div>
+          </div>
+
+          <div id="issues"></div>
+
+          <div class="mt-4 overflow-x-auto rounded-xl border border-base-300/70">
+            <table id="sheet-table" class="table table-sm"></table>
+          </div>
+
+          <div id="stats" class="mt-4"></div>
+        </div>
+
+        <!-- Side panel -->
+        <div class="flex flex-col gap-5">
+          <div class="glass-panel rounded-2xl p-5 shadow-sm">
+            <h3 class="flex items-center gap-2 font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-error"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              At-Risk Students
+            </h3>
+            <p class="mt-1 text-xs opacity-60">Combines attendance % + grades into a risk score. Updates on Save.</p>
+            <div id="at-risk-list" class="mt-3 space-y-1.5">No data yet — save the sheet to see results.</div>
+          </div>
+
+          <div class="glass-panel rounded-2xl p-5 shadow-sm">
+            <h3 class="flex items-center gap-2 font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-warning"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+              Advanced Calculations
+            </h3>
+            <label class="mb-1 mt-4 block text-xs font-medium uppercase tracking-wide opacity-60">Function Type</label>
+            <select id="func-type" onchange="populateFunctions()" class="select select-bordered select-sm w-full">
+              <option value="">Select category...</option>
+              <option value="aggregate">Aggregate Functions</option>
+              <option value="grading">Grading Functions</option>
+              <option value="ranking">Ranking Functions</option>
+            </select>
+            <label class="mb-1 mt-3 block text-xs font-medium uppercase tracking-wide opacity-60">Available Functions</label>
+            <select id="func-name" onchange="showFuncDesc()" class="select select-bordered select-sm w-full">
+              <option value="">Choose function...</option>
+            </select>
+            <div class="mt-3 rounded-lg bg-base-200/70 px-3 py-2 text-xs leading-relaxed opacity-80" id="func-desc">Select a function to see description and example.</div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button class="btn btn-sm flex-1 border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="applyFunction()">Apply Function</button>
+              <button class="btn btn-ghost btn-sm flex-1" onclick="saveSheet()">Auto Calculate All</button>
+            </div>
+            <button class="btn btn-outline btn-sm mt-2 w-full" onclick="openDetectStudents()">Detect Students from Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ REPORT GENERATOR VIEW ============ -->
+    <div class="view" id="view-report">
+      <div class="mb-4 flex items-center gap-2 text-sm">
+        <button class="link-hover link opacity-70" onclick="showView('sheet')">Sheet Editor</button>
+        <span class="opacity-40">/</span>
+        <span class="font-medium">Report Generator</span>
+      </div>
+
+      <div class="grid gap-5 xl:grid-cols-[340px_1fr]">
+        <!-- Controls -->
+        <div class="space-y-4">
+          <div class="glass-panel rounded-2xl p-5 shadow-sm">
+            <h3 class="text-xs font-semibold uppercase tracking-wider opacity-50">Student Selection</h3>
+            <select id="report-student-select" class="select select-bordered select-sm mt-2 w-full"></select>
+
+            <h3 class="mt-5 text-xs font-semibold uppercase tracking-wider opacity-50">Chart Type</h3>
+            <div class="mt-2 grid grid-cols-3 gap-2">
+              <div class="chart-type-btn active flex flex-col items-center gap-1 rounded-xl border border-base-300 p-3 text-xs font-medium" data-type="bar" onclick="selectChartType('bar')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="h-5 w-5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Bar
+              </div>
+              <div class="chart-type-btn flex flex-col items-center gap-1 rounded-xl border border-base-300 p-3 text-xs font-medium" data-type="line" onclick="selectChartType('line')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Line
+              </div>
+              <div class="chart-type-btn flex flex-col items-center gap-1 rounded-xl border border-base-300 p-3 text-xs font-medium" data-type="pie" onclick="selectChartType('pie')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                Pie
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-2xl p-5 shadow-sm">
+            <h3 class="text-xs font-semibold uppercase tracking-wider opacity-50">Actions</h3>
+            <div class="mt-3 space-y-2">
+              <button class="btn btn-sm w-full border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="generatePreview()">Generate Preview</button>
+              <button class="btn btn-outline btn-sm w-full" onclick="downloadReportPdf()">Download PDF</button>
+              <button class="btn btn-outline btn-sm w-full" onclick="downloadReportExcel()">Download Excel</button>
+              <button class="btn btn-ghost btn-sm w-full" onclick="summarizeResults()">Summarize Results (AI)</button>
+              <button class="btn btn-ghost btn-sm w-full" onclick="generateAllStudents()">Generate All Students</button>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-2xl p-5 shadow-sm">
+            <h3 class="text-xs font-semibold uppercase tracking-wider opacity-50">Publish to Database</h3>
+            <label class="mb-1 mt-3 block text-xs font-medium opacity-60">Session Name</label>
+            <input id="db-session-name" placeholder="e.g., Semester 8" class="input input-bordered input-sm w-full">
+            <label class="mb-1 mt-3 block text-xs font-medium opacity-60">Exam / Report Name</label>
+            <input id="db-exam-name" placeholder="e.g., Mid-Term Exam" class="input input-bordered input-sm w-full">
+            <button class="btn btn-sm mt-4 w-full border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="uploadToDatabase()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              Upload Result to Database
+            </button>
+            <p class="mt-2 text-[11px] leading-relaxed opacity-50">Publishing pushes finalized results into each student's portal history.</p>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div id="report-card-container">
+          <div class="glass-panel flex h-full min-h-64 flex-col items-center justify-center rounded-2xl p-10 text-center opacity-70">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-3 h-10 w-10"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <p class="max-w-xs text-sm">Select a student and click "Generate Preview" to see their report card.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ACADEMIC RECORD VIEW ============ -->
+    <div class="view" id="view-transcript">
+      <div class="mb-4 flex items-center gap-2 text-sm">
+        <button class="link-hover link opacity-70" onclick="showView('home')">Dashboard</button>
+        <span class="opacity-40">/</span>
+        <span class="font-medium" id="transcript-crumb">Academic Record</span>
+      </div>
+      <div class="glass-panel rounded-2xl p-6 shadow-sm" id="transcript-container">
+        <p class="py-8 text-center text-sm opacity-60">Search for a student to view their full academic record.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ Custom Blank Sheet Modal ============ -->
+<div class="modal-overlay" id="blank-sheet-modal">
+  <div class="modal-box w-full max-w-lg rounded-2xl border border-base-300/60 bg-base-100 p-6 shadow-2xl">
+    <h3 class="text-lg font-bold tracking-tight">Create Custom Blank Sheet</h3>
+    <p class="mt-1 text-sm opacity-60">Select the columns you want to include in your new sheet.</p>
+    <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="Student Name" checked disabled class="checkbox checkbox-primary checkbox-sm"> Student Name</label>
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="College Id" checked disabled class="checkbox checkbox-primary checkbox-sm"> College Id</label>
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="Mother Name" class="checkbox checkbox-primary checkbox-sm"> Mother Name</label>
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="Father Name" class="checkbox checkbox-primary checkbox-sm"> Father Name</label>
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="Email Id" class="checkbox checkbox-primary checkbox-sm"> Email Id</label>
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="Phone Number" class="checkbox checkbox-primary checkbox-sm"> Phone Number</label>
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="Department" class="checkbox checkbox-primary checkbox-sm"> Department</label>
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="Date Of Birth" class="checkbox checkbox-primary checkbox-sm"> Date Of Birth</label>
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="Branch" class="checkbox checkbox-primary checkbox-sm"> Branch</label>
+      <label class="flex items-center gap-2 rounded-lg border border-base-300/70 px-3 py-2 text-sm"><input type="checkbox" value="Year" class="checkbox checkbox-primary checkbox-sm"> Year</label>
+    </div>
+    <div class="mt-6 flex justify-end gap-2">
+      <button class="btn btn-ghost" onclick="closeBlankSheetModal()">Cancel</button>
+      <button class="btn btn-sm border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="createBlankSheet()">Create Sheet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Detect Students Modal ============ -->
+<div class="modal-overlay" id="detect-modal">
+  <div class="modal-box w-full max-w-xl rounded-2xl border border-base-300/60 bg-base-100 p-6 shadow-2xl">
+    <h3 class="text-lg font-bold tracking-tight">Detect Students from Pasted Data</h3>
+    <p class="mt-1 text-sm opacity-60">Paste tab or comma-separated rows (Student ID, Name, then marks columns).</p>
+    <textarea id="detect-textarea" rows="8" class="textarea textarea-bordered mt-4 w-full font-mono text-xs leading-relaxed"></textarea>
+    <div class="mt-5 flex justify-end gap-2">
+      <button class="btn btn-ghost" onclick="closeDetectModal()">Cancel</button>
+      <button class="btn btn-sm border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="runDetectStudents()">Detect &amp; Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Transcript Search Modal ============ -->
+<div class="modal-overlay" id="transcript-search-modal">
+  <div class="modal-box w-full max-w-md rounded-2xl border border-base-300/60 bg-base-100 p-6 shadow-2xl">
+    <h3 class="text-lg font-bold tracking-tight">View Academic Records</h3>
+    <p class="mt-1 text-sm opacity-60">Enter the student's College ID to view their full Semester 1–8 record.</p>
+    <input id="transcript-search-id" placeholder="e.g., S1001" class="input input-bordered mt-4 w-full">
+    <div class="mt-5 flex justify-end gap-2">
+      <button class="btn btn-ghost" onclick="closeTranscriptSearch()">Cancel</button>
+      <button class="btn btn-sm border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="loadTranscript()">View Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AI Assistant floating widget ============ -->
+<button class="btn btn-circle fixed bottom-5 right-5 z-50 border-none bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/40 transition-transform duration-300 hover:scale-105 hover:from-blue-700 hover:to-indigo-700" onclick="toggleAiWidget()" aria-label="Open AI assistant">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</button>
+
+<div class="ai-widget glass-panel rounded-2xl shadow-2xl" id="ai-widget">
+  <div class="flex items-center justify-between border-b border-base-300/60 px-4 py-3">
+    <span class="flex items-center gap-2 text-sm font-semibold">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-warning"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+      Edu-AI Assistant
+    </span>
+    <button class="btn btn-circle btn-ghost btn-xs" onclick="toggleAiWidget()" aria-label="Close">✕</button>
+  </div>
+  <div class="chat-log flex-1 overflow-y-auto p-4" id="chat-log">
+    <div class="bot">Hello! How can I help you with the Academic Record and Management System today?</div>
+  </div>
+  <div class="flex gap-2 border-t border-base-300/60 p-3">
+    <input id="chat-input" placeholder="Ask a question..." class="input input-bordered input-sm flex-1">
+    <button class="btn btn-sm border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700" onclick="sendTeacherChat()">Send</button>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+  // Enter key submits the transcript search
+  document.getElementById('transcript-search-id')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') loadTranscript();
+  });
+</script>
+{% endblock %}
