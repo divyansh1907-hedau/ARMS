@@ -281,7 +281,10 @@ function renderAtRisk(list) {
     return `
       <div class="flex items-center justify-between gap-2 rounded-lg bg-base-200/60 px-3 py-2">
         <span class="truncate text-sm font-medium">${esc(s.name)} <span class="ml-1 text-xs font-normal opacity-60">${esc(s.student_id)}</span></span>
-        <span class="badge badge-sm shrink-0 font-semibold ${badge}">${s.risk_level} · ${s.risk_score}</span>
+        <span class="flex shrink-0 items-center gap-1.5">
+          <span class="badge badge-sm font-semibold ${badge}">${s.risk_level} · ${s.risk_score}</span>
+          <button class="btn btn-ghost btn-xs px-1.5 text-xs font-semibold text-primary" title="AI study plan + resources" onclick="openRoadmapModal('${esc(s.student_id)}')">Plan</button>
+        </span>
       </div>`;
   }).join('');
 }

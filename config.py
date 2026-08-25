@@ -46,7 +46,9 @@ PROJECTS_ANALYSIS_FILE = os.path.join(DATA_DIR, "projects_analysis.txt")
 
 # ---- Gemini AI ----
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL = "gemini-1.5-flash"
+# gemini-1.5-flash was retired by Google; use a current flash model so live
+# AI calls actually engage instead of silently degrading to offline mode.
+GEMINI_MODEL = "gemini-2.0-flash"
 
 # ---- Grading defaults (customizable per project) ----
 DEFAULT_GRADE_SCALE = [

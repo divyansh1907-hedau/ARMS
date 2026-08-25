@@ -1,0 +1,231 @@
+{# ============================================================
+   Shared "Improvement Roadmap" modal (Edu-AI feature).
+   Include once per dashboard; open with openRoadmapModal(collegeId).
+   Students pass null/omit -> their own roadmap via /api/chatbot/student/
+   roadmap. Teachers pass a college_id -> /api/chatbot/teacher/roadmap.
+   All model-provided strings are rendered via textContent (never
+   innerHTML), matching the chat widget's XSS-safe pattern.
+   ============================================================ #}
+<div class="modal-overlay" id="roadmap-modal">
+  <div class="modal-box flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-base-300 bg-base-100 shadow-2xl">
+    <div class="flex items-center justify-between border-b border-base-300 px-5 py-3">
+      <h3 class="flex items-center gap-2 font-bold tracking-tight">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-primary"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+        Improvement Roadmap
+      </h3>
+      <div class="flex items-center gap-2">
+        <span id="roadmap-mode-badge" class="badge badge-sm hidden font-semibold"></span>
+        <button class="btn btn-circle btn-ghost btn-xs" onclick="closeRoadmapModal()" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div id="roadmap-body" class="flex-1 overflow-y-auto px-5 py-4"></div>
+    <div class="flex justify-end gap-2 border-t border-base-300 px-5 py-3">
+      <button id="roadmap-regenerate" class="btn btn-outline btn-sm hidden" onclick="openRoadmapModal()">Regenerate</button>
+      <button class="btn btn-sm border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700" onclick="closeRoadmapModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SRAM_ROLE = {{ session.get('role')|tojson }};
+let _roadmapCollegeId = null;
+
+function closeRoadmapModal() {
+  document.getElementById('roadmap-modal').classList.remove('open');
+}
+
+function openRoadmapModal(collegeId) {
+  _roadmapCollegeId = (collegeId === undefined || collegeId === null) ? null : String(collegeId);
+  document.getElementById('roadmap-modal').classList.add('open');
+  document.getElementById('roadmap-regenerate').classList.add('hidden');
+  _roadmapLoading();
+  _fetchRoadmap();
+}
+
+function _fetchRoadmap() {
+  const isTeacher = SRAM_ROLE === 'teacher';
+  const url = isTeacher ? '/api/chatbot/teacher/roadmap' : '/api/chatbot/student/roadmap';
+  const body = isTeacher ? { college_id: _roadmapCollegeId } : {};
+  return fetch(url, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.ok) { _roadmapNotice(data.message || 'Roadmap unavailable right now.'); return; }
+      _renderPlan(data.plan, data.mode);
+      document.getElementById('roadmap-regenerate').classList.remove('hidden');
+    })
+    .catch(() => _roadmapNotice('Could not reach Edu-AI. Check your connection and try again.'));
+}
+
+// ---------- rendering helpers (model text only ever hits textContent) ----------
+function _el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined && text !== null && text !== '') node.textContent = text;
+  return node;
+}
+
+// Static icon markup owned by this file — safe for innerHTML.
+const _ICONS = {
+  check: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-success"><polyline points="20 6 9 17 4 12"/></svg>',
+  bolt: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0 text-warning"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>',
+  link: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3 shrink-0 opacity-60"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+};
+function _icon(name) {
+  const span = document.createElement('span');
+  span.innerHTML = _ICONS[name] || '';
+  span.classList.add('inline-flex');
+  return span;
+}
+
+function _sectionTitle(text) {
+  const wrap = _el('div', 'mb-2 mt-5 flex items-center gap-2 first:mt-0');
+  wrap.appendChild(_icon('bolt'));
+  wrap.appendChild(_el('h4', 'text-xs font-bold uppercase tracking-wider opacity-60', text));
+  return wrap;
+}
+
+function _pctTone(pct) {
+  if (pct === null || pct === undefined) return 'badge-soft-info';
+  if (pct < 40) return 'badge-soft-error';
+  if (pct < 60) return 'badge-soft-warning';
+  return 'badge-soft-success';
+}
+
+function _roadmapLoading() {
+  const body = document.getElementById('roadmap-body');
+  body.textContent = '';
+  const box = _el('div', 'flex h-40 flex-col items-center justify-center gap-3 opacity-70');
+  box.appendChild(_el('span', 'loading loading-spinner loading-md text-primary'));
+  box.appendChild(_el('p', 'text-sm', 'Edu-AI is analyzing the report and building a plan…'));
+  body.appendChild(box);
+}
+
+function _roadmapNotice(message) {
+  const body = document.getElementById('roadmap-body');
+  body.textContent = '';
+  const alert = _el('div', 'alert mt-2 text-sm');
+  alert.style.borderColor = 'oklch(var(--wa) / .5)';
+  alert.appendChild(_icon('bolt'));
+  alert.appendChild(_el('span', '', message));
+  body.appendChild(alert);
+}
+
+function _renderPlan(plan, mode) {
+  const body = document.getElementById('roadmap-body');
+  body.textContent = '';
+
+  const badge = document.getElementById('roadmap-mode-badge');
+  badge.classList.remove('hidden');
+  badge.textContent = mode === 'gemini' ? 'AI-generated' : 'offline guide';
+  badge.className = 'badge badge-sm font-semibold ' + (mode === 'gemini' ? 'badge-soft-success' : 'badge-soft-info');
+
+  // Headline
+  body.appendChild(_el(
+    'p',
+    'bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text pr-1 text-lg font-extrabold tracking-tight text-transparent',
+    plan.headline,
+  ));
+
+  // Focus areas
+  const focus = Array.isArray(plan.focus_areas) ? plan.focus_areas : [];
+  if (focus.length) {
+    body.appendChild(_sectionTitle('Focus areas'));
+    const grid = _el('div', 'grid gap-3 sm:grid-cols-2');
+    focus.forEach(fa => {
+      const card = _el('div', 'rounded-xl border border-base-300 bg-base-200/50 p-3.5');
+      const headRow = _el('div', 'flex items-center justify-between gap-2');
+      headRow.appendChild(_el('span', 'truncate text-sm font-semibold', fa.subject));
+      const tone = _pctTone(fa.current);
+      headRow.appendChild(_el('span', 'badge badge-sm shrink-0 font-semibold ' + tone, (fa.current !== null && fa.current !== undefined) ? fa.current + '%' : 'focus'));
+      card.appendChild(headRow);
+      if (fa.why) card.appendChild(_el('p', 'mt-1.5 text-xs leading-relaxed opacity-60', fa.why));
+      const list = _el('ul', 'mt-2 space-y-1.5');
+      (fa.actions || []).forEach(a => {
+        const li = _el('li', 'flex items-start gap-1.5 text-xs leading-relaxed');
+        li.appendChild(_icon('check'));
+        li.appendChild(_el('span', '', a));
+        list.appendChild(li);
+      });
+      card.appendChild(list);
+      grid.appendChild(card);
+    });
+    body.appendChild(grid);
+  }
+
+  // Phased roadmap
+  const phases = Array.isArray(plan.phases) ? plan.phases : [];
+  if (phases.length) {
+    body.appendChild(_sectionTitle('Roadmap'));
+    const wrap = _el('div', 'space-y-2.5');
+    phases.forEach((ph, i) => {
+      const row = _el('div', 'rounded-xl border border-base-300 bg-base-200/50 p-3.5');
+      const headRow = _el('div', 'flex flex-wrap items-center gap-2');
+      headRow.appendChild(_el('span', 'flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-[11px] font-bold text-white', String(i + 1)));
+      headRow.appendChild(_el('span', 'text-sm font-semibold', ph.title));
+      if (ph.window) headRow.appendChild(_el('span', 'badge badge-outline badge-sm', ph.window));
+      row.appendChild(headRow);
+      if (ph.goal) row.appendChild(_el('p', 'mt-1.5 text-xs italic opacity-60', ph.goal));
+      const list = _el('ul', 'mt-2 space-y-1.5');
+      (ph.steps || []).forEach(s => {
+        const li = _el('li', 'flex items-start gap-1.5 text-xs leading-relaxed');
+        li.appendChild(_icon('check'));
+        li.appendChild(_el('span', '', s));
+        list.appendChild(li);
+      });
+      row.appendChild(list);
+      wrap.appendChild(row);
+    });
+    body.appendChild(wrap);
+  }
+
+  // Resources
+  const resources = Array.isArray(plan.resources) ? plan.resources : [];
+  if (resources.length) {
+    body.appendChild(_sectionTitle('Free resources'));
+    const chips = _el('div', 'flex flex-wrap gap-2');
+    resources.forEach(r => {
+      const a = document.createElement('a');
+      a.href = r.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.className = 'glass-card flex items-center gap-1.5 rounded-full border border-base-300 px-3 py-1.5 text-xs font-medium transition-all hover:border-primary/50 hover:text-primary';
+      const label = (r.subject ? r.subject + ': ' : '') + r.title + (r.type ? ' (' + r.type + ')' : '');
+      a.appendChild(document.createTextNode(label));
+      a.appendChild(_icon('link'));
+      chips.appendChild(a);
+    });
+    body.appendChild(chips);
+  }
+
+  // Habits
+  const habits = Array.isArray(plan.habits) ? plan.habits : [];
+  if (habits.length) {
+    body.appendChild(_sectionTitle('Daily habits'));
+    const list = _el('ul', 'space-y-1.5');
+    habits.forEach(h => {
+      const li = _el('li', 'flex items-start gap-1.5 rounded-lg bg-base-200/60 px-3 py-2 text-xs leading-relaxed');
+      li.appendChild(_icon('check'));
+      li.appendChild(_el('span', '', h));
+      list.appendChild(li);
+    });
+    body.appendChild(list);
+  }
+
+  // Encouragement
+  if (plan.encouragement) {
+    const note = _el('div', 'mt-5 flex items-start gap-2 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10 p-3.5 text-sm leading-relaxed');
+    note.appendChild(_icon('bolt'));
+    note.appendChild(_el('span', '', plan.encouragement));
+    body.appendChild(note);
+  }
+}
+
+document.getElementById('roadmap-modal')?.addEventListener('mousedown', e => {
+  if (e.target.id === 'roadmap-modal') closeRoadmapModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('roadmap-modal').classList.contains('open')) closeRoadmapModal();
+});
+</script>

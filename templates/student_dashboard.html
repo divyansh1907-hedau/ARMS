@@ -133,7 +133,13 @@
           Edu-AI Study Buddy
         </h3>
         <p class="mt-1 text-xs leading-relaxed opacity-70">Ask about your grades, weak subjects, or how to improve — the assistant knows your published results.</p>
-        <button class="btn btn-sm mt-3 border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="toggleAiWidget()">Open chat</button>
+        <div class="mt-3 grid grid-cols-[1fr_auto] gap-2">
+          <button class="btn btn-sm border-none bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30" onclick="toggleAiWidget()">Open chat</button>
+          <button class="btn btn-outline btn-sm gap-1.5" onclick="openRoadmapModal()" title="AI-analyzed study plan with resources">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-primary"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+            My roadmap
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -226,6 +232,8 @@
   </div>
 </div>
 {% endif %}
+
+{% include "_roadmap_modal.html" %}
 
 <!-- ============ Edu-AI Study Buddy widget ============ -->
 <button class="btn btn-circle fixed bottom-5 right-5 z-50 border-none bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/40 transition-transform duration-300 hover:scale-105 hover:from-blue-700 hover:to-indigo-700" onclick="toggleAiWidget()" aria-label="Open AI study buddy">
