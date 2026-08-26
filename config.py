@@ -15,6 +15,12 @@ production stack described in the thesis (MongoDB + Google Gemini), just:
 
 import os
 
+from dotenv import load_dotenv
+
+# Load a local .env file if present (a no-op on Render where variables are set
+# in the environment directly). Must run before any os.environ.get below.
+load_dotenv()
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ---- Security ----
