@@ -46,9 +46,12 @@ PROJECTS_ANALYSIS_FILE = os.path.join(DATA_DIR, "projects_analysis.txt")
 
 # ---- Gemini AI ----
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-# gemini-1.5-flash was retired by Google; use a current flash model so live
-# AI calls actually engage instead of silently degrading to offline mode.
-GEMINI_MODEL = "gemini-2.0-flash"
+# Older flash models (1.5, 2.0) were retired by Google; use a current flash
+# model so live AI calls actually engage instead of silently degrading to
+# offline mode. If the primary model is unavailable/retired, the chatbot
+# retries once with GEMINI_FALLBACK_MODEL before going offline.
+GEMINI_MODEL = "gemini-3.6-flash"
+GEMINI_FALLBACK_MODEL = "gemini-flash-latest"
 
 # ---- Grading defaults (customizable per project) ----
 DEFAULT_GRADE_SCALE = [

@@ -74,12 +74,17 @@ def _try_gemini(system_prompt, context, question):
     try:
         import google.generativeai as genai
         genai.configure(api_key=config.GEMINI_API_KEY)
-        model = genai.GenerativeModel(config.GEMINI_MODEL, system_instruction=system_prompt)
-        response = model.generate_content(f"CONTEXT:\n{context}\n\nQUESTION:\n{question}")
-        return response.text
     except Exception as exc:
-        print(f"[chatbot] Gemini call failed, using offline fallback: {exc}")
+        print(f"[chatbot] Gemini unavailable, using offline fallback: {exc}")
         return None
+    for model_name in (config.GEMINI_MODEL, config.GEMINI_FALLBACK_MODEL):
+        try:
+            model = genai.GenerativeModel(model_name, system_instruction=system_prompt)
+            response = model.generate_content(f"CONTEXT:\n{context}\n\nQUESTION:\n{question}")
+            return response.text
+        except Exception as exc:
+            print(f"[chatbot] Gemini call failed on {model_name}, trying fallback: {exc}")
+    return None
 
 
 def _offline_teacher_reply(context, question):
@@ -146,17 +151,22 @@ def _try_gemini_roadmap(context):
     try:
         import google.generativeai as genai
         genai.configure(api_key=config.GEMINI_API_KEY)
-        model = genai.GenerativeModel(
-            config.GEMINI_MODEL, system_instruction=ROADMAP_SYSTEM_PROMPT,
-        )
-        response = model.generate_content(
-            f"CONTEXT:\n{context}\n\nTASK:\nProduce the improvement plan JSON now."
-        )
-        parsed = json.loads(_extract_json(response.text))
-        return normalize_ai_roadmap(parsed)
     except Exception as exc:
-        print(f"[chatbot] Gemini roadmap failed, using offline fallback: {exc}")
+        print(f"[chatbot] Gemini unavailable, using offline fallback: {exc}")
         return None
+    for model_name in (config.GEMINI_MODEL, config.GEMINI_FALLBACK_MODEL):
+        try:
+            model = genai.GenerativeModel(
+                model_name, system_instruction=ROADMAP_SYSTEM_PROMPT,
+            )
+            response = model.generate_content(
+                f"CONTEXT:\n{context}\n\nTASK:\nProduce the improvement plan JSON now."
+            )
+            parsed = json.loads(_extract_json(response.text))
+            return normalize_ai_roadmap(parsed)
+        except Exception as exc:
+            print(f"[chatbot] Gemini roadmap failed on {model_name}, trying fallback: {exc}")
+    return None
 
 
 def build_roadmap_response(college_id):
